@@ -7,6 +7,7 @@ LISP=sbcl
 
 LOAD_PATH=-L . -L ..
 CONTRIBS = $(patsubst sly-%.el,%,$(wildcard sly-*.el))
+CONTRIB_TESTS = $(patsubst test/sly-%-tests.el,%,$(wildcard test/sly-*.el))
 SLY_VERSION=$(shell grep "Version:" ../sly.el | grep -E -o "[0-9.]+$$")
 
 ELFILES := $(shell find . -type f -iname "*.el")
@@ -63,9 +64,9 @@ elpa-all: $(CONTRIBS:%=elpa-%)
 
 SELECTOR=t
 
-$(CONTRIBS:%=check-%): CONTRIB_NAME=$(patsubst check-%,sly-%,$@)
-$(CONTRIBS:%=check-%): SELECTOR=(tag contrib)
-$(CONTRIBS:%=check-%): compile
+$(CONTRIB_TESTS:%=check-%): CONTRIB_NAME=$(patsubst check-%,sly-%,$@)
+$(CONTRIB_TESTS:%=check-%): SELECTOR=(quote (tag contrib))
+$(CONTRIB_TESTS:%=check-%): compile
 	$(EMACS) -Q --batch $(LOAD_PATH) -L test                        \
 	        --eval "(require (quote sly))"                        \
 	        --eval "(sly-setup (quote ($(CONTRIB_NAME))))"        \
@@ -78,4 +79,4 @@ $(CONTRIBS:%=check-%): compile
 	        --eval "(setq inferior-lisp-program \"$(LISP)\")"       \
 	        --eval '(sly-batch-test (quote $(SELECTOR)))'
 
-check-all: $(CONTRIBS:%=check-%)
+check-all: $(CONTRIB_TESTS:%=check-%)
